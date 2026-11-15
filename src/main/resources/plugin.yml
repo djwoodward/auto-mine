@@ -1,0 +1,14 @@
+name: AutoMine
+version: '0.1.0'
+main: dev.automine.AutoMinePlugin
+api-version: '26.2'
+description: Optional automatic eating for survival players.
+commands:
+  auto-mine:
+    description: Configure your AutoMine features.
+    usage: /auto-mine auto-eat [on|off|status]
+    permission: automine.autoeat
+permissions:
+  automine.autoeat:
+    description: Allows a player to enable automatic eating.
+    default: true

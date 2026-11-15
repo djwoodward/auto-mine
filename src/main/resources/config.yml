@@ -1,0 +1,23 @@
+# Hunger points, from 0 to 19. Two points equal one hunger icon.
+hunger-threshold: 12
+# Checks once per second. One item is consumed per check at most.
+check-interval-ticks: 20
+# Only these ordinary foods are used; valuable/special and harmful foods are excluded.
+foods:
+  - BREAD
+  - COOKED_BEEF
+  - COOKED_PORKCHOP
+  - COOKED_CHICKEN
+  - COOKED_MUTTON
+  - COOKED_RABBIT
+  - COOKED_COD
+  - COOKED_SALMON
+  - BAKED_POTATO
+  - CARROT
+  - APPLE
+  - MELON_SLICE
+  - SWEET_BERRIES
+  - GLOW_BERRIES
+  - DRIED_KELP
+  - COOKIE
+  - PUMPKIN_PIE
