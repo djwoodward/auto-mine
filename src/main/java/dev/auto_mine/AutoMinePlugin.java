@@ -1,4 +1,4 @@
-package dev.automine;
+package dev.auto_mine;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -62,7 +62,7 @@ public final class AutoMinePlugin extends JavaPlugin {
             sender.sendMessage("Only players can use auto-eat.");
             return true;
         }
-        if (!player.hasPermission("automine.autoeat")) {
+        if (!player.hasPermission("auto-mine.autoeat")) {
             player.sendMessage("You do not have permission to use auto-eat.");
             return true;
         }
@@ -86,7 +86,7 @@ public final class AutoMinePlugin extends JavaPlugin {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!sender.hasPermission("automine.autoeat")) {
+        if (!sender.hasPermission("auto-mine.autoeat")) {
             return List.of();
         }
         if (args.length == 1) {
@@ -102,7 +102,7 @@ public final class AutoMinePlugin extends JavaPlugin {
     }
 
     private void tryEat(Player player) {
-        if (!isEnabled(player) || !player.hasPermission("automine.autoeat")
+        if (!isEnabled(player) || !player.hasPermission("auto-mine.autoeat")
                 || player.isDead() || !player.isValid() || player.hasActiveItem()
                 || player.getFoodLevel() > threshold
                 || (player.getGameMode() != GameMode.SURVIVAL

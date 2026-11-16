@@ -2,8 +2,8 @@
 
 ## Project Structure & Module Organization
 
-AutoMine is a Java 25 Maven plugin for Paper 26.2. The entry point,
-`src/main/java/dev/automine/AutoMinePlugin.java`, handles commands, player
+auto-mine is a Java 25 Maven plugin for Paper 26.2. The entry point,
+`src/main/java/dev/auto_mine/AutoMinePlugin.java`, handles commands, player
 preferences, and scheduled food consumption. `src/main/resources/plugin.yml`
 declares the plugin, commands, and permissions; `config.yml` contains default
 settings and the food allowlist. `pom.xml` defines dependencies and compilation.
@@ -26,7 +26,7 @@ test sources or separate assets.
 
 Follow the existing four-space Java indentation and same-line opening braces.
 Use `UpperCamelCase` classes, `lowerCamelCase` methods and fields, and lowercase
-package names under `dev.automine`. YAML uses two-space indentation and
+package names under `dev.auto_mine`. YAML uses two-space indentation and
 hyphenated configuration keys. No formatter or linter is configured. Keep
 command and permission declarations synchronized with Java behavior, and align
 versions in `pom.xml` and `plugin.yml` when releasing.
@@ -37,7 +37,7 @@ No automated testing framework or coverage threshold is configured. Build each
 change and follow the manual verification checklist in `README.md` on Paper.
 Check opt-in defaults, reconnect/restart persistence, inventory and offhand
 restoration, excluded game modes, and cancelled `PlayerItemConsumeEvent` events.
-If adding automated tests, place them under `src/test/java/dev/automine/` with
+If adding automated tests, place them under `src/test/java/dev/auto_mine/` with
 names ending in `Test` and configure the needed test dependencies.
 
 ## Commit & Pull Request Guidelines

@@ -1,4 +1,4 @@
-# AutoMine
+# auto-mine
 
 A Java 25 / Maven plugin for **Paper 26.2**. Auto-eat is disabled for each player
 until they opt in; preferences persist across reconnects and server restarts.
@@ -33,7 +33,12 @@ To build and install manually:
 - `/auto-mine auto-eat on` or `/auto-mine auto-eat off`: explicitly enable or disable.
 - `/auto-mine auto-eat status`: show your preference.
 
-Permission: `automine.autoeat` (available to everyone by default).
+Permission: `auto-mine.autoeat` (available to everyone by default).
+
+When upgrading from the previous unhyphenated plugin name, move your existing
+configuration into `plugins/auto-mine/` and update explicit permission grants to
+`auto-mine.autoeat`. The plugin name also determines the player preference
+namespace, so players must enable auto-eat again after this rename.
 
 ## Behavior and configuration
 
@@ -49,7 +54,7 @@ placed in the offhand and restored within the same server tick. Eating has no
 normal animation delay. Plugins that inspect inventory inside consume events
 will see that temporary placement.
 
-Edit `plugins/AutoMine/config.yml` and restart to adjust `hunger-threshold`
+Edit `plugins/auto-mine/config.yml` and restart to adjust `hunger-threshold`
 (0–19), `check-interval-ticks` (minimum 1), or the `foods` allowlist.
 Valuable and harmful foods are excluded by default. When auto-eat needs food but
 none is allowed in your inventory, it warns once instead of repeating every check.
@@ -57,7 +62,7 @@ The warning resets when auto-eat finds food again, you disable auto-eat, or you
 disconnect. Normal hunger rules still apply while you are out of food.
 
 Existing installations retain their configured threshold: set `hunger-threshold: 14`
-in `plugins/AutoMine/config.yml` to use the earlier eating threshold.
+in `plugins/auto-mine/config.yml` to use the earlier eating threshold.
 
 ## Manual verification on Paper
 
