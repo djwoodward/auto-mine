@@ -1,5 +1,6 @@
 # Hunger points, from 0 to 19. Two points equal one hunger icon.
-hunger-threshold: 12
+# Eat when three hunger icons are missing (seven remain).
+hunger-threshold: 14
 # Checks once per second. One item is consumed per check at most.
 check-interval-ticks: 20
 # Only these ordinary foods are used; valuable/special and harmful foods are excluded.

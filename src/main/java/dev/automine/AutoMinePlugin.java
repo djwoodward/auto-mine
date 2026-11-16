@@ -1,10 +1,12 @@
 package dev.automine;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,13 +22,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class AutoMinePlugin extends JavaPlugin {
     private NamespacedKey enabledKey;
     private final Set<Material> foods = EnumSet.noneOf(Material.class);
+    private final Set<UUID> warnedNoFood = new HashSet<>();
     private int threshold;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         enabledKey = new NamespacedKey(this, "auto_eat_enabled");
-        threshold = Math.clamp(getConfig().getInt("hunger-threshold", 12), 0, 19);
+        threshold = Math.clamp(getConfig().getInt("hunger-threshold", 14), 0, 19);
         for (String name : getConfig().getStringList("foods")) {
             Material material = Material.matchMaterial(name);
             if (material != null && material.isEdible()) {
@@ -38,6 +41,7 @@ public final class AutoMinePlugin extends JavaPlugin {
         Objects.requireNonNull(getCommand("auto-mine")).setExecutor(this);
         long interval = Math.max(1L, getConfig().getLong("check-interval-ticks", 20L));
         getServer().getScheduler().runTaskTimer(this, () -> {
+            warnedNoFood.removeIf(id -> getServer().getPlayer(id) == null);
             for (Player player : getServer().getOnlinePlayers()) {
                 tryEat(player);
             }
@@ -73,6 +77,9 @@ public final class AutoMinePlugin extends JavaPlugin {
         }
         player.getPersistentDataContainer().set(enabledKey, PersistentDataType.BYTE,
                 (byte) (enabled ? 1 : 0));
+        if (!enabled) {
+            warnedNoFood.remove(player.getUniqueId());
+        }
         player.sendMessage("Auto-eat is " + (enabled ? "enabled." : "disabled."));
         return true;
     }
@@ -105,6 +112,7 @@ public final class AutoMinePlugin extends JavaPlugin {
         PlayerInventory inventory = player.getInventory();
         // Consume from the offhand first, then storage slots (hotbar included).
         if (isFood(inventory.getItemInOffHand())) {
+            warnedNoFood.remove(player.getUniqueId());
             consume(player);
             return;
         }
@@ -113,6 +121,7 @@ public final class AutoMinePlugin extends JavaPlugin {
             if (!isFood(food)) {
                 continue;
             }
+            warnedNoFood.remove(player.getUniqueId());
             // Use the native consumption path for saturation, effects, and consume events.
             // No scheduled delay: the inventory swap and restoration happen in one tick.
             ItemStack previousOffhand = inventory.getItemInOffHand();
@@ -132,6 +141,9 @@ public final class AutoMinePlugin extends JavaPlugin {
                 }
             }
             return;
+        }
+        if (warnedNoFood.add(player.getUniqueId())) {
+            player.sendMessage("Auto-eat: you are out of allowed food! Restock your inventory.");
         }
     }
 

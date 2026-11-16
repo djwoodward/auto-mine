@@ -21,7 +21,7 @@ Permission: `automine.autoeat` (available to everyone by default).
 ## Behavior and configuration
 
 In Survival and Adventure, auto-eat checks once per second and instantly consumes
-one allowed food item when hunger is at or below 12/20 (six icons). It keeps
+one allowed food item when hunger is at or below 14/20 (seven icons remaining, three missing). It keeps
 eating on subsequent checks while hunger remains at or below the threshold.
 Food must exist in the player's inventory; none is created for free. Offhand food
 is preferred, followed by hotbar and inventory order. Active item use is left alone.
@@ -34,12 +34,18 @@ will see that temporary placement.
 
 Edit `plugins/AutoMine/config.yml` and restart to adjust `hunger-threshold`
 (0–19), `check-interval-ticks` (minimum 1), or the `foods` allowlist.
-Valuable and harmful foods are excluded by default. No allowed food means no action.
+Valuable and harmful foods are excluded by default. When auto-eat needs food but
+none is allowed in your inventory, it warns once instead of repeating every check.
+The warning resets when auto-eat finds food again, you disable auto-eat, or you
+disconnect. Normal hunger rules still apply while you are out of food.
+
+Existing installations retain their configured threshold: set `hunger-threshold: 14`
+in `plugins/AutoMine/config.yml` to use the earlier eating threshold.
 
 ## Manual verification on Paper
 
 - A new player's `/auto-mine auto-eat status` reports disabled; low hunger consumes no food.
-- Enable it, lower hunger to 12 or below, and carry bread: one item is consumed
+- Enable it, lower hunger to 14 or below, and carry bread: one item is consumed
   per check and hunger/saturation increase. Test both inventory and offhand food.
 - Verify a held tool and an occupied offhand are restored after inventory eating.
 - Disable it and verify food stops being consumed. Reconnect and restart to check
@@ -48,3 +54,6 @@ Valuable and harmful foods are excluded by default. No allowed food means no act
   and active item use: no automatic consumption should happen.
 - With another plugin cancelling `PlayerItemConsumeEvent`, verify hunger and item
   counts remain unchanged.
+
+- Run out of allowed food while hungry: verify one warning across repeated checks.
+  Restock and let auto-eat consume food, then run out again: verify a new warning.
