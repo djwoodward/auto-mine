@@ -5,6 +5,23 @@ until they opt in; preferences persist across reconnects and server restarts.
 
 ## Build and install
 
+With [mise](https://mise.jdx.dev/), run:
+
+```sh
+mise trust
+mise install
+mise run build
+mise run install
+```
+
+The configuration provides Java 25 and Maven 3.9. `build` runs `mvn clean package`.
+`install` builds first, then moves the JAR into
+`~/docker/minecraft/data/plugins/`, the plugin directory under the Docker server's
+mounted `data` directory. It replaces the same-named JAR; restart the server to
+load the update. The destination directory must already exist.
+
+To build and install manually:
+
 1. Install JDK 25 and Maven 3.9+.
 2. Run `mvn clean package`.
 3. Copy `target/auto-mine-0.1.0.jar` into your Paper server's `plugins/` directory.

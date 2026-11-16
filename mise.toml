@@ -1,0 +1,17 @@
+[tools]
+java = "25"
+maven = "3.9"
+
+[tasks.build]
+description = "Build the plugin JAR"
+run = "mvn clean package"
+
+[tasks.install]
+description = "Build and move the JAR into the local Minecraft server plugins directory"
+depends = ["build"]
+run = '''
+set -eu
+plugin_dir="$HOME/docker/minecraft/data/plugins"
+test -d "$plugin_dir" || { echo "Plugin directory does not exist: $plugin_dir" >&2; exit 1; }
+mv target/auto-mine-*.jar "$plugin_dir/"
+'''
