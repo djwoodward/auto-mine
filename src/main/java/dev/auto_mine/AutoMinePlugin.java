@@ -50,7 +50,7 @@ public final class AutoMinePlugin extends JavaPlugin {
 
     private boolean isEnabled(Player player) {
         return player.getPersistentDataContainer()
-                .getOrDefault(enabledKey, PersistentDataType.BYTE, (byte) 0) == 1;
+                .getOrDefault(enabledKey, PersistentDataType.BYTE, (byte) 1) == 1;
     }
 
     @Override
@@ -103,16 +103,33 @@ public final class AutoMinePlugin extends JavaPlugin {
 
     private void tryEat(Player player) {
         if (!isEnabled(player) || !player.hasPermission("auto-mine.autoeat")
-                || player.isDead() || !player.isValid() || player.hasActiveItem()
-                || player.getFoodLevel() > threshold
+                || player.isDead() || !player.isValid()
                 || (player.getGameMode() != GameMode.SURVIVAL
                     && player.getGameMode() != GameMode.ADVENTURE)) {
             return;
         }
         PlayerInventory inventory = player.getInventory();
+        boolean hasFood = isFood(inventory.getItemInOffHand());
+        if (!hasFood) {
+            for (ItemStack item : inventory.getStorageContents()) {
+                if (isFood(item)) {
+                    hasFood = true;
+                    break;
+                }
+            }
+        }
+        if (!hasFood) {
+            if (warnedNoFood.add(player.getUniqueId())) {
+                player.sendMessage("Auto-eat: you are out of allowed food! Restock your inventory.");
+            }
+            return;
+        }
+        warnedNoFood.remove(player.getUniqueId());
+        if (player.hasActiveItem() || player.getFoodLevel() > threshold) {
+            return;
+        }
         // Consume from the offhand first, then storage slots (hotbar included).
         if (isFood(inventory.getItemInOffHand())) {
-            warnedNoFood.remove(player.getUniqueId());
             consume(player);
             return;
         }
@@ -121,7 +138,6 @@ public final class AutoMinePlugin extends JavaPlugin {
             if (!isFood(food)) {
                 continue;
             }
-            warnedNoFood.remove(player.getUniqueId());
             // Use the native consumption path for saturation, effects, and consume events.
             // No scheduled delay: the inventory swap and restoration happen in one tick.
             ItemStack previousOffhand = inventory.getItemInOffHand();
@@ -141,9 +157,6 @@ public final class AutoMinePlugin extends JavaPlugin {
                 }
             }
             return;
-        }
-        if (warnedNoFood.add(player.getUniqueId())) {
-            player.sendMessage("Auto-eat: you are out of allowed food! Restock your inventory.");
         }
     }
 

@@ -35,7 +35,7 @@ versions in `pom.xml` and `plugin.yml` when releasing.
 
 No automated testing framework or coverage threshold is configured. Build each
 change and follow the manual verification checklist in `README.md` on Paper.
-Check opt-in defaults, reconnect/restart persistence, inventory and offhand
+Check default-enabled behavior and opt-outs, reconnect/restart persistence, inventory and offhand
 restoration, excluded game modes, and cancelled `PlayerItemConsumeEvent` events.
 If adding automated tests, place them under `src/test/java/dev/auto_mine/` with
 names ending in `Test` and configure the needed test dependencies.
@@ -46,5 +46,5 @@ History currently contains only `Initial commit`, so no established message
 convention exists. Use concise, imperative subjects describing the change.
 Pull requests should explain the resulting behavior, link relevant issues, and
 record build results and manual Paper checks. Document configuration, command,
-or permission changes in the README. Preserve default-disabled auto-eat and
+or permission changes in the README. Preserve default-enabled auto-eat, saved opt-outs, and
 native Paper consumption/event handling when extending the plugin.

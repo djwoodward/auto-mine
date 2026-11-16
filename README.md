@@ -1,7 +1,9 @@
 # auto-mine
 
-A Java 25 / Maven plugin for **Paper 26.2**. Auto-eat is disabled for each player
-until they opt in; preferences persist across reconnects and server restarts.
+A Java 25 / Maven plugin for **Paper 26.2**. Auto-eat is enabled by default for
+players without a saved preference. Use `/auto-mine auto-eat off` to opt out;
+preferences persist across reconnects and server restarts. Existing saved
+preferences are preserved.
 
 ## Build and install
 
@@ -56,8 +58,10 @@ will see that temporary placement.
 
 Edit `plugins/auto-mine/config.yml` and restart to adjust `hunger-threshold`
 (0–19), `check-interval-ticks` (minimum 1), or the `foods` allowlist.
-Valuable and harmful foods are excluded by default. When auto-eat needs food but
-none is allowed in your inventory, it warns once instead of repeating every check.
+Valuable and harmful foods are excluded by default. While auto-eat is enabled in
+Survival or Adventure, having no allowed food in your inventory triggers a chat
+warning, even above the hunger threshold or during active item use. It warns once
+instead of repeating every check.
 The warning resets when auto-eat finds food again, you disable auto-eat, or you
 disconnect. Normal hunger rules still apply while you are out of food.
 
@@ -66,7 +70,7 @@ in `plugins/auto-mine/config.yml` to use the earlier eating threshold.
 
 ## Manual verification on Paper
 
-- A new player's `/auto-mine auto-eat status` reports disabled; low hunger consumes no food.
+- A new player's `/auto-mine auto-eat status` reports enabled; low hunger consumes food.
 - Enable it, lower hunger to 14 or below, and carry bread: one item is consumed
   per check and hunger/saturation increase. Test both inventory and offhand food.
 - Verify a held tool and an occupied offhand are restored after inventory eating.
@@ -77,5 +81,7 @@ in `plugins/auto-mine/config.yml` to use the earlier eating threshold.
 - With another plugin cancelling `PlayerItemConsumeEvent`, verify hunger and item
   counts remain unchanged.
 
-- Run out of allowed food while hungry: verify one warning across repeated checks.
-  Restock and let auto-eat consume food, then run out again: verify a new warning.
+- Enable auto-eat with no allowed food at full hunger: verify one chat warning
+  across repeated checks, including during active item use.
+  Restock above the hunger threshold, wait for a check, then remove the food:
+  verify a new warning. Repeat while hungry and after consuming the last item.
