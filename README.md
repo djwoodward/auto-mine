@@ -35,7 +35,12 @@ To build and install manually:
 - `/auto-mine auto-eat on` or `/auto-mine auto-eat off`: explicitly enable or disable.
 - `/auto-mine auto-eat status`: show your preference.
 
-Permission: `auto-mine.autoeat` (available to everyone by default).
+- `/auto-mine run-fast`: toggle progressive sprint speed.
+- `/auto-mine run-fast on` or `/auto-mine run-fast off`: explicitly enable or disable.
+- `/auto-mine run-fast status`: show your preference.
+
+Permissions: `auto-mine.autoeat` and `auto-mine.runfast` (both available to everyone
+by default). Each feature has an independent saved preference.
 
 When upgrading from the previous unhyphenated plugin name, move your existing
 configuration into `plugins/auto-mine/` and update explicit permission grants to
@@ -45,7 +50,7 @@ namespace, so players must enable auto-eat again after this rename.
 ## Behavior and configuration
 
 In Survival and Adventure, auto-eat checks once per second and instantly consumes
-one allowed food item when hunger is at or below 14/20 (seven icons remaining, three missing). It keeps
+one allowed food item when hunger is at or below 19/20 (half an icon missing). It keeps
 eating on subsequent checks while hunger remains at or below the threshold.
 Food must exist in the player's inventory; none is created for free. Offhand food
 is preferred, followed by hotbar and inventory order. Active item use is left alone.
@@ -65,13 +70,27 @@ instead of repeating every check.
 The warning resets when auto-eat finds food again, you disable auto-eat, or you
 disconnect. Normal hunger rules still apply while you are out of food.
 
-Existing installations retain their configured threshold: set `hunger-threshold: 14`
-in `plugins/auto-mine/config.yml` to use the earlier eating threshold.
+Existing installations retain their configured threshold: set `hunger-threshold: 19`
+in `plugins/auto-mine/config.yml` to eat when half an icon is missing, or use `18`
+to wait until one full icon is missing. Restart the server after changing it.
+
+Run-fast is enabled by default. In Survival and Adventure, every 20 ticks (one
+second at 20 TPS) of continuous moving sprint adds 10% to normal sprint speed,
+up to a 100% bonus after 10 seconds. Stopping sprinting resets the bonus immediately;
+stopping movement for five ticks (a quarter second at 20 TPS) resets it too.
+Short gaps between movement packets preserve the run. Sprint jumping counts; swimming, flying, gliding, riding, and excluded game
+modes do not. Teleporting, disconnecting, dying, disabling the feature, or stopping
+the plugin also clears the bonus. Other movement attributes and potion effects
+remain in place; run-fast applies its own temporary multiplier.
+
+Set `run-fast.speed-increase` (default `0.1`) and `run-fast.maximum-bonus`
+(default `1.0`) to nonnegative fractions and restart to change the acceleration
+and cap. Existing configs use these defaults when the keys are absent.
 
 ## Manual verification on Paper
 
 - A new player's `/auto-mine auto-eat status` reports enabled; low hunger consumes food.
-- Enable it, lower hunger to 14 or below, and carry bread: one item is consumed
+- Enable it, lower hunger to 19 or below, and carry bread: one item is consumed
   per check and hunger/saturation increase. Test both inventory and offhand food.
 - Verify a held tool and an occupied offhand are restored after inventory eating.
 - Disable it and verify food stops being consumed. Reconnect and restart to check
@@ -85,3 +104,17 @@ in `plugins/auto-mine/config.yml` to use the earlier eating threshold.
   across repeated checks, including during active item use.
   Restock above the hunger threshold, wait for a check, then remove the food:
   verify a new warning. Repeat while hungry and after consuming the last item.
+
+- A new player's `/auto-mine run-fast status` reports enabled. Sprint continuously:
+  verify increases at 1, 2, and 3 seconds, reaching double sprint speed at 10 seconds.
+- Keep sprinting past 10 seconds, including sprint jumping: verify the capped
+  speed stays steady without periodic drops.
+- Stop sprinting or stand still against a wall for at least a quarter second:
+  verify speed resets and the next
+  sprint starts from normal speed. Repeat with sprint jumping and teleporting.
+- Disable run-fast while boosted: verify immediate reset. Reconnect and restart
+  to confirm the preference persists independently of auto-eat.
+- Check Creative, Spectator, swimming, flight, gliding, riding, death, permission
+  removal, and plugin shutdown: verify no bonus remains. Check that potion effects
+  and other plugins' movement modifiers survive a run-fast reset.
+- Adjust the increment and cap, restart, and verify the new progression and cap.

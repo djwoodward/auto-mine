@@ -24,12 +24,16 @@ public final class AutoMinePlugin extends JavaPlugin {
     private final Set<Material> foods = EnumSet.noneOf(Material.class);
     private final Set<UUID> warnedNoFood = new HashSet<>();
     private int threshold;
+    private NamespacedKey runFastKey;
+    private RunFast runFast;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         enabledKey = new NamespacedKey(this, "auto_eat_enabled");
-        threshold = Math.clamp(getConfig().getInt("hunger-threshold", 14), 0, 19);
+        runFastKey = new NamespacedKey(this, "run_fast_enabled");
+        runFast = new RunFast(this);
+        threshold = Math.clamp(getConfig().getInt("hunger-threshold", 19), 0, 19);
         for (String name : getConfig().getStringList("foods")) {
             Material material = Material.matchMaterial(name);
             if (material != null && material.isEdible()) {
@@ -48,6 +52,18 @@ public final class AutoMinePlugin extends JavaPlugin {
         }, interval, interval);
     }
 
+    @Override
+    public void onDisable() {
+        if (runFast != null) {
+            getServer().getOnlinePlayers().forEach(runFast::reset);
+        }
+    }
+
+    boolean isRunFastEnabled(Player player) {
+        return player.getPersistentDataContainer()
+                .getOrDefault(runFastKey, PersistentDataType.BYTE, (byte) 1) == 1;
+    }
+
     private boolean isEnabled(Player player) {
         return player.getPersistentDataContainer()
                 .getOrDefault(enabledKey, PersistentDataType.BYTE, (byte) 1) == 1;
@@ -55,19 +71,22 @@ public final class AutoMinePlugin extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1 || args.length > 2 || !args[0].equalsIgnoreCase("auto-eat")) {
+        if (args.length < 1 || args.length > 2 || (!args[0].equalsIgnoreCase("auto-eat")
+                && !args[0].equalsIgnoreCase("run-fast"))) {
             return false;
         }
+        boolean running = args[0].equalsIgnoreCase("run-fast");
+        String feature = running ? "Run-fast" : "Auto-eat";
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use auto-eat.");
+            sender.sendMessage("Only players can use " + feature.toLowerCase(Locale.ROOT) + ".");
             return true;
         }
-        if (!player.hasPermission("auto-mine.autoeat")) {
-            player.sendMessage("You do not have permission to use auto-eat.");
+        if (!player.hasPermission(running ? "auto-mine.runfast" : "auto-mine.autoeat")) {
+            player.sendMessage("You do not have permission to use " + feature.toLowerCase(Locale.ROOT) + ".");
             return true;
         }
         String action = args.length == 1 ? "toggle" : args[1].toLowerCase(Locale.ROOT);
-        boolean enabled = isEnabled(player);
+        boolean enabled = running ? isRunFastEnabled(player) : isEnabled(player);
         switch (action) {
             case "toggle" -> enabled = !enabled;
             case "on" -> enabled = true;
@@ -75,25 +94,31 @@ public final class AutoMinePlugin extends JavaPlugin {
             case "status" -> { }
             default -> { return false; }
         }
-        player.getPersistentDataContainer().set(enabledKey, PersistentDataType.BYTE,
+        player.getPersistentDataContainer().set(running ? runFastKey : enabledKey, PersistentDataType.BYTE,
                 (byte) (enabled ? 1 : 0));
         if (!enabled) {
-            warnedNoFood.remove(player.getUniqueId());
+            if (running) {
+                runFast.reset(player);
+            } else {
+                warnedNoFood.remove(player.getUniqueId());
+            }
         }
-        player.sendMessage("Auto-eat is " + (enabled ? "enabled." : "disabled."));
+        player.sendMessage(feature + " is " + (enabled ? "enabled." : "disabled."));
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!sender.hasPermission("auto-mine.autoeat")) {
-            return List.of();
-        }
         if (args.length == 1) {
-            return "auto-eat".startsWith(args[0].toLowerCase(Locale.ROOT))
-                    ? List.of("auto-eat") : List.of();
+            return List.of("auto-eat", "run-fast").stream()
+                    .filter(option -> sender.hasPermission(option.equals("run-fast")
+                            ? "auto-mine.runfast" : "auto-mine.autoeat"))
+                    .filter(option -> option.startsWith(args[0].toLowerCase(Locale.ROOT))).toList();
         }
-        if (args.length != 2 || !args[0].equalsIgnoreCase("auto-eat")) {
+        if (args.length != 2 || (!args[0].equalsIgnoreCase("auto-eat")
+                && !args[0].equalsIgnoreCase("run-fast"))
+                || !sender.hasPermission(args[0].equalsIgnoreCase("run-fast")
+                        ? "auto-mine.runfast" : "auto-mine.autoeat")) {
             return List.of();
         }
         String prefix = args[1].toLowerCase(Locale.ROOT);

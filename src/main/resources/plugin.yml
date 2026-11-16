@@ -2,13 +2,15 @@ name: auto-mine
 version: '0.1.0'
 main: dev.auto_mine.AutoMinePlugin
 api-version: '26.2'
-description: Optional automatic eating for survival players.
+description: Automatic eating and progressive sprint speed for survival players.
 commands:
   auto-mine:
     description: Configure your auto-mine features.
-    usage: /auto-mine auto-eat [on|off|status]
-    permission: auto-mine.autoeat
+    usage: /auto-mine <auto-eat|run-fast> [on|off|status]
 permissions:
   auto-mine.autoeat:
     description: Allows a player to enable automatic eating.
+    default: true
+  auto-mine.runfast:
+    description: Allows a player to enable progressive sprint speed.
     default: true
