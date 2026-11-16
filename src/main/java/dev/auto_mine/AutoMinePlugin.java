@@ -120,7 +120,7 @@ public final class AutoMinePlugin extends JavaPlugin {
         }
         if (!hasFood) {
             if (warnedNoFood.add(player.getUniqueId())) {
-                player.sendMessage("Auto-eat: you are out of allowed food! Restock your inventory.");
+                player.sendMessage("Auto-eat: you are out of food! Restock your inventory.");
             }
             return;
         }
