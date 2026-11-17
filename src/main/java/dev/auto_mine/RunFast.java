@@ -26,8 +26,8 @@ final class RunFast implements Listener {
 
     RunFast(AutoMinePlugin plugin) {
         modifierKey = new NamespacedKey(plugin, "run_fast_speed");
-        increment = setting(plugin, "run-fast.speed-increase", 0.1);
-        maximum = setting(plugin, "run-fast.maximum-bonus", 1.0);
+        increment = setting(plugin, "run-fast.speed-increase", 1.0 / 3.0);
+        maximum = setting(plugin, "run-fast.maximum-bonus", 2.0);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : plugin.getServer().getOnlinePlayers()) {

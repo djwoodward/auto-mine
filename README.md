@@ -75,17 +75,20 @@ in `plugins/auto-mine/config.yml` to eat when half an icon is missing, or use `1
 to wait until one full icon is missing. Restart the server after changing it.
 
 Run-fast is enabled by default. In Survival and Adventure, every 20 ticks (one
-second at 20 TPS) of continuous moving sprint adds 10% to normal sprint speed,
-up to a 100% bonus after 10 seconds. Stopping sprinting resets the bonus immediately;
+second at 20 TPS) of continuous moving sprint adds 33⅓% to normal sprint speed,
+up to a 200% bonus (3× normal sprint speed) after 6 seconds. Stopping sprinting resets the bonus immediately;
 stopping movement for five ticks (a quarter second at 20 TPS) resets it too.
 Short gaps between movement packets preserve the run. Sprint jumping counts; swimming, flying, gliding, riding, and excluded game
 modes do not. Teleporting, disconnecting, dying, disabling the feature, or stopping
 the plugin also clears the bonus. Other movement attributes and potion effects
 remain in place; run-fast applies its own temporary multiplier.
 
-Set `run-fast.speed-increase` (default `0.1`) and `run-fast.maximum-bonus`
-(default `1.0`) to nonnegative fractions and restart to change the acceleration
+Set `run-fast.speed-increase` (default `0.3333333333333333`) and `run-fast.maximum-bonus`
+(default `2.0`) to nonnegative fractions and restart to change the acceleration
 and cap. Existing configs use these defaults when the keys are absent.
+For existing installations with these keys already set, update `speed-increase` to
+`0.3333333333333333` and `maximum-bonus` to `2.0` in
+`plugins/auto-mine/config.yml`, then restart.
 
 ## Manual verification on Paper
 
@@ -106,8 +109,8 @@ and cap. Existing configs use these defaults when the keys are absent.
   verify a new warning. Repeat while hungry and after consuming the last item.
 
 - A new player's `/auto-mine run-fast status` reports enabled. Sprint continuously:
-  verify increases at 1, 2, and 3 seconds, reaching double sprint speed at 10 seconds.
-- Keep sprinting past 10 seconds, including sprint jumping: verify the capped
+  verify increases at 1, 2, and 3 seconds, reaching triple sprint speed at 6 seconds.
+- Keep sprinting past 6 seconds, including sprint jumping: verify the capped
   speed stays steady without periodic drops.
 - Stop sprinting or stand still against a wall for at least a quarter second:
   verify speed resets and the next

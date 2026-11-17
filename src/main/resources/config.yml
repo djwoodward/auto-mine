@@ -25,6 +25,6 @@ foods:
 
 # Run-fast adds this fraction of normal sprint speed every 20 ticks (1 second).
 run-fast:
-  speed-increase: 0.1
-  # Maximum bonus: 1.0 means double normal sprint speed.
-  maximum-bonus: 1.0
+  speed-increase: 0.3333333333333333
+  # Maximum bonus: 2.0 means triple normal sprint speed after 6 seconds.
+  maximum-bonus: 2.0
