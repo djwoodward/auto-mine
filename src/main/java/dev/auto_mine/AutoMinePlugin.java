@@ -33,6 +33,7 @@ public final class AutoMinePlugin extends JavaPlugin {
         enabledKey = new NamespacedKey(this, "auto_eat_enabled");
         runFastKey = new NamespacedKey(this, "run_fast_enabled");
         runFast = new RunFast(this);
+        getServer().getPluginManager().registerEvents(new InventoryMending(), this);
         threshold = Math.clamp(getConfig().getInt("hunger-threshold", 19), 0, 19);
         for (String name : getConfig().getStringList("foods")) {
             Material material = Material.matchMaterial(name);

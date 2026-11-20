@@ -5,6 +5,11 @@ players without a saved preference. Use `/auto-mine auto-eat off` to opt out;
 preferences persist across reconnects and server restarts. Existing saved
 preferences are preserved.
 
+When you pick up an XP orb, the Mending item missing the most durability points
+gets repaired first. Items in either hand, equipped armor, and items in the
+hotbar and main inventory all use the same ranking. XP left after repairs goes
+to your experience bar.
+
 ## Build and install
 
 With [mise](https://mise.jdx.dev/), run:
@@ -76,8 +81,11 @@ to wait until one full icon is missing. Restart the server after changing it.
 
 Run-fast is enabled by default. In Survival and Adventure, every 20 ticks (one
 second at 20 TPS) of continuous moving sprint adds 33⅓% to normal sprint speed,
-up to a 200% bonus (3× normal sprint speed) after 6 seconds. Stopping sprinting resets the bonus immediately;
-stopping movement for five ticks (a quarter second at 20 TPS) resets it too.
+up to a 200% bonus (3× normal sprint speed) after 6 seconds. The bonus decays
+at twice the buildup rate when you stop sprinting, or after five ticks without
+movement while sprinting. At the default settings, a full bonus takes about
+3 seconds to wear off. If you resume sprinting sooner, you keep the remaining
+bonus and build speed from there.
 Short gaps between movement packets preserve the run. Sprint jumping counts; swimming, flying, gliding, riding, and excluded game
 modes do not. Teleporting, disconnecting, dying, disabling the feature, or stopping
 the plugin also clears the bonus. Other movement attributes and potion effects
@@ -91,6 +99,14 @@ For existing installations with these keys already set, update `speed-increase` 
 `plugins/auto-mine/config.yml`, then restart.
 
 ## Manual verification on Paper
+
+- Pick up a small XP orb while holding a damaged Mending item and carrying a
+  more damaged one. Verify the stored item repairs first. Swap the items and
+  verify the more damaged item still repairs first. Repeat with equipped gear,
+  include an elytra and a bow, and verify leftover XP reaches the bar after
+  repairs. Check that items without Mending stay damaged.
+- With another plugin cancelling `PlayerItemMendEvent` for a stored item,
+  verify the item stays damaged and its XP remains available.
 
 - A new player's `/auto-mine auto-eat status` reports enabled; low hunger consumes food.
 - Enable it, lower hunger to 19 or below, and carry bread: one item is consumed
@@ -112,9 +128,12 @@ For existing installations with these keys already set, update `speed-increase` 
   verify increases at 1, 2, and 3 seconds, reaching triple sprint speed at 6 seconds.
 - Keep sprinting past 6 seconds, including sprint jumping: verify the capped
   speed stays steady without periodic drops.
-- Stop sprinting or stand still against a wall for at least a quarter second:
-  verify speed resets and the next
-  sprint starts from normal speed. Repeat with sprint jumping and teleporting.
+- Stop sprinting at full speed for one second, then resume. Verify the sprint
+  starts at roughly 2⅓× normal sprint speed and builds back to the cap.
+- Stop sprinting for three seconds at full boost and verify the next sprint
+  starts at normal speed. Stand still against a wall while sprinting and verify
+  the bonus starts to decay after five ticks. Teleport while boosted and verify
+  the bonus clears immediately.
 - Disable run-fast while boosted: verify immediate reset. Reconnect and restart
   to confirm the preference persists independently of auto-eat.
 - Check Creative, Spectator, swimming, flight, gliding, riding, death, permission

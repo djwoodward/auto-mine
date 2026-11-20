@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 final class RunFast implements Listener {
     private static final int SPEED_INTERVAL_TICKS = 20;
-    private static final int IDLE_RESET_TICKS = 5;
+    private static final int IDLE_GRACE_TICKS = 5;
 
     private final NamespacedKey modifierKey;
     private final Map<UUID, Progress> progress = new HashMap<>();
@@ -42,7 +42,7 @@ final class RunFast implements Listener {
     }
 
     private void tick(Player player, boolean enabled) {
-        if (!enabled || !player.hasPermission("auto-mine.runfast") || !player.isSprinting()
+        if (!enabled || !player.hasPermission("auto-mine.runfast")
                 || player.isDead() || !player.isValid() || player.isInsideVehicle()
                 || player.isFlying() || player.isGliding() || player.isSwimming()
                 || (player.getGameMode() != GameMode.SURVIVAL
@@ -54,7 +54,9 @@ final class RunFast implements Listener {
         Progress state = progress.get(player.getUniqueId());
         if (state == null) {
             reset(player);
-            progress.put(player.getUniqueId(), new Progress(location));
+            if (player.isSprinting()) {
+                progress.put(player.getUniqueId(), new Progress(location));
+            }
             return;
         }
         double dx = location.getX() - state.location.getX();
@@ -63,15 +65,31 @@ final class RunFast implements Listener {
             reset(player);
             return;
         }
-        if (dx * dx + dz * dz < 0.000001) {
+        boolean moving = dx * dx + dz * dz >= 0.000001;
+        if (moving || !player.isSprinting()) {
+            state.location = location;
+        }
+        if (!player.isSprinting() || !moving) {
             // Movement packets do not necessarily arrive every server tick.
-            // Preserve the run across short gaps, but do not charge up while idle.
-            if (++state.idleTicks >= IDLE_RESET_TICKS) {
+            if (player.isSprinting() && state.decayTicks == 0
+                    && ++state.idleTicks < IDLE_GRACE_TICKS) {
+                return;
+            }
+            state.ticks = 0;
+            state.idleTicks = 0;
+            if (state.decayTicks == 0) {
+                state.bonusBeforeDecay = state.bonus;
+            }
+            double decaySteps = ++state.decayTicks / (SPEED_INTERVAL_TICKS / 2.0);
+            state.bonus = Math.max(0, state.bonusBeforeDecay - increment * decaySteps);
+            if (state.bonus == 0) {
                 reset(player);
+            } else {
+                applyBonus(player, state.bonus);
             }
             return;
         }
-        state.location = location;
+        state.decayTicks = 0;
         // Include the short packet gap in elapsed running time once movement resumes.
         state.ticks += state.idleTicks + 1;
         state.idleTicks = 0;
@@ -80,13 +98,17 @@ final class RunFast implements Listener {
             if (state.bonus >= maximum || increment == 0) {
                 return;
             }
-            state.bonus = Math.min(maximum, ++state.steps * increment);
-            AttributeInstance speed = player.getAttribute(Attribute.MOVEMENT_SPEED);
-            if (speed != null) {
-                speed.removeModifier(modifierKey);
-                speed.addTransientModifier(new AttributeModifier(modifierKey, state.bonus,
-                        AttributeModifier.Operation.MULTIPLY_SCALAR_1));
-            }
+            state.bonus = Math.min(maximum, state.bonus + increment);
+            applyBonus(player, state.bonus);
+        }
+    }
+
+    private void applyBonus(Player player, double bonus) {
+        AttributeInstance speed = player.getAttribute(Attribute.MOVEMENT_SPEED);
+        if (speed != null) {
+            speed.removeModifier(modifierKey);
+            speed.addTransientModifier(new AttributeModifier(modifierKey, bonus,
+                    AttributeModifier.Operation.MULTIPLY_SCALAR_1));
         }
     }
 
@@ -112,7 +134,8 @@ final class RunFast implements Listener {
         private Location location;
         private int ticks;
         private int idleTicks;
-        private int steps;
+        private int decayTicks;
+        private double bonusBeforeDecay;
         private double bonus;
 
         private Progress(Location location) {
